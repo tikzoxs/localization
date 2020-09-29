@@ -21,8 +21,11 @@ train_count = 100
 validation_count = 100
 dataset_size = 20
 
-iris_radius = 10
+
 iris_folder = "/home/1TB/retina_labeled/train"
+real_train_folder = "/home/1TB/retina_labeled/train"
+real_validation_folder = "/home/1TB/retina_labeled/validation"
+real_test_folder = "/home/1TB/retina_labeled/test"
 train_output_folder = "/home/1TB/retina_labeled/generated"
 validation_output_folder = "/home/1TB/retina_labeled/generated"
 
@@ -166,6 +169,83 @@ def generateImagesAndSave():
 				break;
 		if(break_flag):
 			break;
+
+def readImagesFromTrainFolder():
+	# with open('/home/1TB/retina_labeled/generated/validation.csv', 'w', newline='') as file:
+	# 	fieldnames = ['image_name']
+	# 	writer = csv.DictWriter(file, fieldnames=fieldnames)
+	count = 0
+	while(count<20000000):
+		count += 1
+		image_count = 1
+		break_flag = False
+		batch = []
+		labels = []
+		while(True):
+			iris_list = os.listdir(real_train_folder)
+			random.shuffle(iris_list)
+			for iris in iris_list:
+				# print(image_count)
+				image_path = iris_folder + '/' + iris
+				img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
+				iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
+				train_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
+				batch.append(train_image)
+				labels.append([iris_cordinates[0]/H/2,iris_cordinates[1]/W/2])
+				image_count += 1
+				if(image_count > batch_size):
+					break_flag = True
+					break;
+			if(break_flag):
+				break;
+		yield (tf.reshape(batch, [batch_size,train_W,train_H,1]),tf.reshape(labels, [batch_size,2]))
+		batch = []
+		labels = []
+
+def readImagesFromValidationFolder():
+	# with open('/home/1TB/retina_labeled/generated/validation.csv', 'w', newline='') as file:
+	# 	fieldnames = ['image_name']
+	# 	writer = csv.DictWriter(file, fieldnames=fieldnames)
+	count = 0
+	while(count<20000000):
+		count += 1
+		image_count = 1
+		break_flag = False
+		batch = []
+		labels = []
+		while(True):
+			iris_list = os.listdir(real_validation_folder)
+			random.shuffle(iris_list)
+			for iris in iris_list:
+				# print(image_count)
+				image_path = real_validation_folder + '/' + iris
+				img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
+				iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
+				train_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
+				batch.append(train_image)
+				labels.append([iris_cordinates[0]/H/2,iris_cordinates[1]/W/2])
+				image_count += 1
+				if(image_count > batch_size):
+					break_flag = True
+					break;
+			if(break_flag):
+				break;
+		yield (tf.reshape(batch, [batch_size,train_W,train_H,1]),tf.reshape(labels, [batch_size,2]))
+		batch = []
+		labels = []
+
+def readImagesFromTestFolder():
+	iris_list = os.listdir(real_test_folder)
+	random.shuffle(iris_list)
+	for iris in iris_list:
+		image_path = real_test_folder + '/' + iris
+		img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
+		iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
+		test_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
+
+	return test_image, [iris_cordinates[0]/H/2,iris_cordinates[1]/W/2]
+
+
 
 
 
