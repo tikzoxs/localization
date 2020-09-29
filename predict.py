@@ -12,7 +12,7 @@ W = 256
 train_H = 72
 train_W = 128
 batch_size = 16
-TEST_ITERATIONS = 20
+TEST_ITERATIONS = 26
 
 
 workdir = "/home/tharindu/Desktop/black/codes/Black/loclization/ckpt"
@@ -48,11 +48,14 @@ else:
 model.summary()
 
 for i in range(TEST_ITERATIONS):
-	img, cordinates = generate_dataset.testingImageGenerator()
+	# img, cordinates = generate_dataset.testingImageGenerator()
+	img, cordinates = generate_dataset.readImagesFromTestFolder()
+	img = cv2.resize(img, (W,H), interpolation = cv2.INTER_AREA)
+	print(img.shape)
 	image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
 	center = model.predict(tf.reshape(image, [1,train_W,train_H,1]))
 	print([center[0][0]*H*2, center[0][1]*W*2], [cordinates[0]*H*2, cordinates[1]*W*2])
-	display_image = cv2.circle(img, (int(center[0][0]**H*2),int(center[0][1]*W*2)), 32, (255,0,0), 2)
+	display_image = cv2.circle(img, (int(center[0][1]*W*2),int(center[0][0]*H*2)), 32, (255,0,0), 2)
 	cv2.imshow('prediction',display_image/255)
 	cv2.waitKey(0)
 
