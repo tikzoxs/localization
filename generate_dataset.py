@@ -97,7 +97,7 @@ def generateImages():
 				# cv2.imwrite(validation_output_folder + '/' + str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg', generated_image)
 				# writer.writerow({'image_name': str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg'})
 				batch.append(generated_image)
-				labels.append([new_iris_cordinates[0]/H/2,new_iris_cordinates[1]/W/2])
+				labels.append([new_iris_cordinates[0]/H,new_iris_cordinates[1]/W])
 				image_count += 1
 				if(image_count > batch_size):
 					break_flag = True
@@ -133,7 +133,7 @@ def generateImagesValidation():
 				# cv2.imwrite(validation_output_folder + '/' + str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg', generated_image)
 				# writer.writerow({'image_name': str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg'})
 				batch.append(generated_image)
-				labels.append([new_iris_cordinates[0]/H/2,new_iris_cordinates[1]/W/2])
+				labels.append([new_iris_cordinates[0]/H,new_iris_cordinates[1]/W])
 				image_count += 1
 				if(image_count > batch_size):
 					break_flag = True
@@ -158,7 +158,7 @@ def testingImageGenerator():
 	# generated_image = cv2.resize(generated_image, (train_W,train_H), interpolation = cv2.INTER_AREA)
 		# cv2.imwrite(validation_output_folder + '/' + str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg', generated_image)
 		# writer.writerow({'image_name': str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg'})
-	return generated_image, [new_iris_cordinates[0]/H/2,new_iris_cordinates[1]/W/2]
+	return generated_image, [new_iris_cordinates[0]/H,new_iris_cordinates[1]/W]
 
 def generateImagesAndSave():
 	image_count = 1
