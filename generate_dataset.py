@@ -22,7 +22,7 @@ validation_count = 100
 dataset_size = 100
 
 
-iris_folder = "/home/1TB/new_iris_dataset/normalized"
+iris_folder = "/hpc/tkal976/iris/data/normalized"
 real_train_folder = "/home/1TB/retina_labeled/train"
 real_validation_folder = "/home/1TB/retina_labeled/validation"
 real_test_folder = "/home/1TB/retina_labeled/test"
