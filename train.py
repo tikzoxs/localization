@@ -47,7 +47,6 @@ else:
 
 #print model
 model.summary()
-exit()
 
 #checkpoint saving callback
 checkpointer = ModelCheckpoint(filepath=ckpt, verbose=1, save_best_only=True)
