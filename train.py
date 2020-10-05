@@ -6,10 +6,10 @@ from keras.callbacks import ModelCheckpoint
 import generate_dataset
 import os
 
-H = 144
-W = 256
-train_H = 72
-train_W = 128
+H = 120
+W = 160
+train_H = 120
+train_W = 160
 batch_size = 16
 
 workdir = "/home/tharindu/Desktop/black/codes/Black/loclization/ckpt"

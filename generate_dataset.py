@@ -201,7 +201,7 @@ def readImagesFromTrainFolder():
 			random.shuffle(iris_list)
 			for iris in iris_list:
 				# print(image_count)
-				image_path = iris_folder + '/' + iris
+				image_path = real_train_folder + '/' + iris
 				img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
 				iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
 				train_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
