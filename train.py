@@ -67,7 +67,7 @@ history = model.fit_generator(
 	steps_per_epoch=10000, epochs=100,
 	verbose=1, callbacks=[checkpointer,reduce_lr], 
 	validation_data=generate_dataset.generateImagesValidation(), validation_steps=500, validation_freq=1, class_weight=None, 
-	max_queue_size=10, workers=2, use_multiprocessing=False, shuffle=True, initial_epoch=0)
+	max_queue_size=10, workers=1, use_multiprocessing=False, shuffle=True, initial_epoch=0)
 
 print('\nhistory dict:', history.history)
 
