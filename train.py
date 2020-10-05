@@ -10,7 +10,7 @@ H = 120
 W = 160
 train_H = 120
 train_W = 160
-batch_size = 16
+batch_size = 64
 
 workdir = "/home/tharindu/Desktop/black/codes/Black/loclization/ckpt"
 tensorboard = "/home/tharindu/Desktop/black/codes/Black/loclization/tensorboard"
@@ -53,7 +53,7 @@ checkpointer = ModelCheckpoint(filepath=ckpt, verbose=1, save_best_only=True)
 
 #learning rate callbacks to check plateau and schedule
 reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=10, min_lr=0.0000001)
+                              patience=3, min_lr=0.0000001)
 
 
 #tensorboard callback
@@ -64,10 +64,10 @@ reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
 #fitting the model to the data from generator
 history = model.fit_generator(
 	generate_dataset.generateImages(), 
-	steps_per_epoch=10000, epochs=75,
+	steps_per_epoch=10000, epochs=100,
 	verbose=1, callbacks=[checkpointer,reduce_lr], 
 	validation_data=generate_dataset.generateImagesValidation(), validation_steps=500, validation_freq=1, class_weight=None, 
-	max_queue_size=10, workers=1, use_multiprocessing=False, shuffle=True, initial_epoch=0)
+	max_queue_size=10, workers=2, use_multiprocessing=False, shuffle=True, initial_epoch=0)
 
 print('\nhistory dict:', history.history)
 
