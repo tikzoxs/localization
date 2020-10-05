@@ -31,12 +31,12 @@ model.add(layers.Dense(2))
 
 
 #defining optimizers and loss funtction
-model.compile(optimizer=keras.optimizers.Adadelta(), 
+model.compile(optimizer=keras.optimizers.Adadelta(learning_rate=0.0003), 
               loss=tf.keras.losses.MeanSquaredError(),
               metrics=['mean_squared_error'])
 
 #load weights if available
-ckpt = workdir + "/weights.h5"
+ckpt = workdir + "/weights_ssl.h5"
 if(os.path.isfile(ckpt)):
 	tf.print("Loading existing wewights found inside: ", ckpt)
 	model.load_weights(ckpt)
@@ -53,7 +53,7 @@ checkpointer = ModelCheckpoint(filepath=ckpt, verbose=1, save_best_only=True)
 
 #learning rate callbacks to check plateau and schedule
 reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=10, min_lr=0.00001)
+                              patience=10, min_lr=0.0000001)
 
 
 #tensorboard callback
@@ -64,10 +64,10 @@ reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
 #fitting the model to the data from generator
 history = model.fit_generator(
 	generate_dataset.generateImages(), 
-	steps_per_epoch=10000, epochs=100,
+	steps_per_epoch=10000, epochs=75,
 	verbose=1, callbacks=[checkpointer,reduce_lr], 
-	validation_data=generate_dataset.generateImagesValidation(), validation_steps=100, validation_freq=1, class_weight=None, 
-	max_queue_size=10, workers=1, use_multiprocessing=False, shuffle=True, initial_epoch=0)
+	validation_data=generate_dataset.generateImagesValidation(), validation_steps=500, validation_freq=1, class_weight=None, 
+	max_queue_size=10, workers=1, use_multiprocessing=False, shuffle=True, initial_epoch=44)
 
 print('\nhistory dict:', history.history)
 

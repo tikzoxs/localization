@@ -7,22 +7,22 @@ import csv
 import tensorflow as tf
 
 BASE_BRIGTNESS = 120
-FILL_BASE_COLOR = 150
+FILL_BASE_COLOR = 100
 LINE_BASE_COLOR = 50
-EYE_RADIUS = 32
+EYE_RADIUS = 28
 REQUIRED_COUNT = 5000
-GAUSSIAN_BLUR_RADIUS = [0,3,5,7,9]
-H = 144
-W = 256
-train_H = 72
-train_W = 128
+GAUSSIAN_BLUR_RADIUS = [0,1,3,5,7]
+H = 120
+W = 160
+train_H = 120
+train_W = 160
 batch_size = 16
 train_count = 100
 validation_count = 100
-dataset_size = 20
+dataset_size = 100
 
 
-iris_folder = "/home/1TB/retina_labeled/train"
+iris_folder = "/home/1TB/new_iris_dataset/normalized"
 real_train_folder = "/home/1TB/retina_labeled/train"
 real_validation_folder = "/home/1TB/retina_labeled/validation"
 real_test_folder = "/home/1TB/retina_labeled/test"
@@ -35,8 +35,10 @@ def randomBackground(h,w):
 def plannedBackground(h,w,brightness):
 	image = np.asarray([[float(brightness)]*w]*h)
 	for c in range(randint(1,10)):
-		image = cv2.circle(image, (randint(0,W),randint(0,H)), randint(40,120), randint(FILL_BASE_COLOR-20,FILL_BASE_COLOR+20), -1)
-	image = cv2.GaussianBlur(image,(25,25),cv2.BORDER_DEFAULT)
+		image = cv2.circle(image, (randint(0,W),randint(0,H)), randint(40,120), randint(FILL_BASE_COLOR-50,FILL_BASE_COLOR+50), -1)
+	blur_window = GAUSSIAN_BLUR_RADIUS[randint(0,4)]
+	blur_kernel = (blur_window , blur_window)
+	image = cv2.GaussianBlur(image,blur_kernel,cv2.BORDER_DEFAULT)
 	for c in range(randint(1,10)):
 		image = cv2.circle(image, (randint(0,W),randint(0,H)), randint(50,500), randint(LINE_BASE_COLOR-20,LINE_BASE_COLOR+20), randint(1,4))
 	return image
@@ -44,18 +46,31 @@ def plannedBackground(h,w,brightness):
 
 
 def cropAndInsertIris(image,back,iris_cordinates,new_iris_cordinates):
-	# print(iris_cordinates,new_iris_cordinates)
-	for x in range(-1*EYE_RADIUS + 1, EYE_RADIUS - 1):
-		for y in range(-1*EYE_RADIUS + 1, EYE_RADIUS - 1):
-			if(x**2 + y**2 < EYE_RADIUS**2):
-				ic1 = min(iris_cordinates[0]+x,143)
-				ic2 = min(iris_cordinates[1]+y,255)
-				nic1 = min(new_iris_cordinates[0]+x,143)
-				nic2 = min(new_iris_cordinates[1]+y,255)
+	blurred_eye = cv2.GaussianBlur(image,(0,0),cv2.BORDER_DEFAULT)
+	random_eye_radius  = randint(EYE_RADIUS - 3, EYE_RADIUS + 3)
+	for x in range(-1*random_eye_radius + 1, random_eye_radius - 1):
+		for y in range(-1*random_eye_radius + 1, random_eye_radius - 1):
+			if(x**2 + y**2 < random_eye_radius**2):
+				ic1 = min(iris_cordinates[0]+x,H-1)
+				ic2 = min(iris_cordinates[1]+y,W-1)
+				nic1 = min(new_iris_cordinates[0]+x,H-1)
+				nic2 = min(new_iris_cordinates[1]+y,W-1)
+				back[nic1, nic2] = blurred_eye[ic1, ic2]
+	blur_window = GAUSSIAN_BLUR_RADIUS[randint(1,4)]
+	blur_kernel = (blur_window , blur_window)
+	back = cv2.GaussianBlur(back,blur_kernel,cv2.BORDER_DEFAULT)
+	for x in range(-1*random_eye_radius + 1, random_eye_radius - 1):
+		for y in range(-1*random_eye_radius + 1, random_eye_radius - 1):
+			if(x**2 + y**2 < (random_eye_radius-5)**2):
+				ic1 = min(iris_cordinates[0]+x,H-1)
+				ic2 = min(iris_cordinates[1]+y,W-1)
+				nic1 = min(new_iris_cordinates[0]+x,H-1)
+				nic2 = min(new_iris_cordinates[1]+y,W-1)
 				back[nic1, nic2] = image[ic1, ic2]
-	blur_kernel = (GAUSSIAN_BLUR_RADIUS[randint(0,2)],GAUSSIAN_BLUR_RADIUS[randint(0,2)])	
-	return cv2.GaussianBlur(back,blur_kernel,cv2.BORDER_DEFAULT)
-
+	blur_window = GAUSSIAN_BLUR_RADIUS[randint(1,2)]
+	blur_kernel = (blur_window , blur_window)	
+	blurred_final = cv2.GaussianBlur(back,blur_kernel,cv2.BORDER_DEFAULT)
+	return blurred_final
 
 def generateImages():
 	# with open('/home/1TB/retina_labeled/generated/validation.csv', 'w', newline='') as file:
@@ -76,7 +91,7 @@ def generateImages():
 				image_path = iris_folder + '/' + iris
 				img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
 				iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
-				new_iris_cordinates = [randint(1.5*EYE_RADIUS, H - 1.5*EYE_RADIUS), randint(1.5*EYE_RADIUS, W - 1.5*EYE_RADIUS)]
+				new_iris_cordinates = [randint(EYE_RADIUS, H - EYE_RADIUS), randint(EYE_RADIUS, W - EYE_RADIUS)]
 				generated_image = cropAndInsertIris(img,plannedBackground(H,W,randint(BASE_BRIGTNESS-50,BASE_BRIGTNESS+50)),iris_cordinates,new_iris_cordinates)
 				generated_image = cv2.resize(generated_image, (train_W,train_H), interpolation = cv2.INTER_AREA)
 				# cv2.imwrite(validation_output_folder + '/' + str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg', generated_image)
@@ -112,7 +127,7 @@ def generateImagesValidation():
 				image_path = iris_folder + '/' + iris
 				img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
 				iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
-				new_iris_cordinates = [randint(1.5*EYE_RADIUS, H - 1.5*EYE_RADIUS), randint(1.5*EYE_RADIUS, W - 1.5*EYE_RADIUS)]
+				new_iris_cordinates = [randint(EYE_RADIUS, H - EYE_RADIUS), randint(EYE_RADIUS, W - EYE_RADIUS)]
 				generated_image = cropAndInsertIris(img,plannedBackground(H,W,randint(BASE_BRIGTNESS-50,BASE_BRIGTNESS+50)),iris_cordinates,new_iris_cordinates)
 				generated_image = cv2.resize(generated_image, (train_W,train_H), interpolation = cv2.INTER_AREA)
 				# cv2.imwrite(validation_output_folder + '/' + str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg', generated_image)
@@ -137,7 +152,7 @@ def testingImageGenerator():
 	image_path = iris_folder + '/' + iris
 	img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
 	iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
-	new_iris_cordinates = [randint(1.5*EYE_RADIUS, H - 1.5*EYE_RADIUS), randint(1.5*EYE_RADIUS, W- 1.5*EYE_RADIUS)]
+	new_iris_cordinates = [randint(EYE_RADIUS, H - EYE_RADIUS), randint(EYE_RADIUS, W- EYE_RADIUS)]
 	generated_image = cropAndInsertIris(img,plannedBackground(H,W,randint(BASE_BRIGTNESS-50,BASE_BRIGTNESS+50)),iris_cordinates,new_iris_cordinates)
 	# cv2.imwrite(validation_output_folder + '/' + str(randint(1,10)) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg', generated_image)
 	# generated_image = cv2.resize(generated_image, (train_W,train_H), interpolation = cv2.INTER_AREA)
@@ -156,7 +171,7 @@ def generateImagesAndSave():
 			image_path = iris_folder + '/' + iris
 			img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
 			iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
-			new_iris_cordinates = [randint(1.5*EYE_RADIUS, H - 1.5*EYE_RADIUS), randint(1.5*EYE_RADIUS, W - 1.5*EYE_RADIUS)]
+			new_iris_cordinates = [randint(EYE_RADIUS//2, H - EYE_RADIUS//2), randint(EYE_RADIUS//2, W - EYE_RADIUS//2)]
 			generated_image = cropAndInsertIris(img,plannedBackground(H,W,randint(BASE_BRIGTNESS-50,BASE_BRIGTNESS+50)),iris_cordinates,new_iris_cordinates)
 			generated_image = cv2.resize(generated_image, (train_W,train_H), interpolation = cv2.INTER_AREA)
 			cv2.imwrite(validation_output_folder + '/' + str(image_count) + '_' + str(new_iris_cordinates[0]) + '_' + str(new_iris_cordinates[1]) + '.jpg', generated_image)
@@ -235,10 +250,11 @@ def readImagesFromValidationFolder():
 		labels = []
 
 def readImagesFromTestFolder():
-	iris_list = os.listdir(real_test_folder)
+	this_folder = real_validation_folder
+	iris_list = os.listdir(this_folder)
 	random.shuffle(iris_list)
 	for iris in iris_list:
-		image_path = real_test_folder + '/' + iris
+		image_path = this_folder + '/' + iris
 		img = cv2.imread(image_path,cv2.COLOR_BGR2GRAY)
 		iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
 		test_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)

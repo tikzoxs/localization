@@ -53,7 +53,7 @@ checkpointer = ModelCheckpoint(filepath=ckpt, verbose=1, save_best_only=True)
 
 #learning rate callbacks to check plateau and schedule
 reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=10, min_lr=0.0000001)
+                              patience=10, min_lr=0.00000001)
 
 
 #tensorboard callback
@@ -64,9 +64,9 @@ reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
 #fitting the model to the data from generator
 history = model.fit_generator(
 	generate_dataset.readImagesFromTrainFolder(), 
-	steps_per_epoch=931, epochs=10,
+	steps_per_epoch=931*2//batch_size, epochs=20,
 	verbose=1, callbacks=[checkpointer,reduce_lr], 
-	validation_data=generate_dataset.readImagesFromValidationFolder(), validation_steps=42, validation_freq=1, class_weight=None, 
+	validation_data=generate_dataset.readImagesFromValidationFolder(), validation_steps=42*2//batch_size, validation_freq=1, class_weight=None, 
 	max_queue_size=10, workers=1, use_multiprocessing=False, shuffle=True, initial_epoch=0)
 
 print('\nhistory dict:', history.history)
