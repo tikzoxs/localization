@@ -14,18 +14,18 @@ REQUIRED_COUNT = 5000
 GAUSSIAN_BLUR_RADIUS = [0,1,3,5,7]
 H = 120
 W = 160
-train_H = 120
-train_W = 160
-batch_size = 64
+train_H = 60
+train_W = 80
+batch_size = 32
 train_count = 100
 validation_count = 100
 dataset_size = 100
 
 
-iris_folder = "/hpc/tkal976/iris/data/normalized"
-real_train_folder = "/home/1TB/retina_labeled/train"
-real_validation_folder = "/home/1TB/retina_labeled/validation"
-real_test_folder = "/home/1TB/retina_labeled/test"
+iris_folder = "/home/1TB/new_iris_dataset/normalized"
+real_train_folder = "/home/1TB/new_iris_dataset/train"
+real_validation_folder = "/home/1TB/new_iris_dataset/validation"
+real_test_folder = "/home/1TB/new_iris_dataset/test"
 train_output_folder = "/home/1TB/retina_labeled/generated"
 validation_output_folder = "/home/1TB/retina_labeled/generated"
 
@@ -206,7 +206,7 @@ def readImagesFromTrainFolder():
 				iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
 				train_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
 				batch.append(train_image)
-				labels.append([iris_cordinates[0]/H/2,iris_cordinates[1]/W/2])
+				labels.append([iris_cordinates[0]/H,iris_cordinates[1]/W])
 				image_count += 1
 				if(image_count > batch_size):
 					break_flag = True
@@ -238,7 +238,7 @@ def readImagesFromValidationFolder():
 				iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
 				train_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
 				batch.append(train_image)
-				labels.append([iris_cordinates[0]/H/2,iris_cordinates[1]/W/2])
+				labels.append([iris_cordinates[0]/H,iris_cordinates[1]/W])
 				image_count += 1
 				if(image_count > batch_size):
 					break_flag = True
@@ -250,7 +250,7 @@ def readImagesFromValidationFolder():
 		labels = []
 
 def readImagesFromTestFolder():
-	this_folder = real_validation_folder
+	this_folder = real_test_folder
 	iris_list = os.listdir(this_folder)
 	random.shuffle(iris_list)
 	for iris in iris_list:
@@ -259,7 +259,7 @@ def readImagesFromTestFolder():
 		iris_cordinates = [int(iris.split('.')[0].split('_')[2]), int(iris.split('.')[0].split('_')[1])]
 		test_image = cv2.resize(img, (train_W,train_H), interpolation = cv2.INTER_AREA)
 
-	return test_image, [iris_cordinates[0]/H/2,iris_cordinates[1]/W/2]
+	return test_image, [iris_cordinates[0]/H,iris_cordinates[1]/W]
 
 
 
