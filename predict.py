@@ -70,7 +70,7 @@ for i in range(TEST_ITERATIONS):
 	x = int(center[0][0]*H)
 	y = int(center[0][1]*W)
 	print([center[0][0]*H, center[0][1]*W], [cordinates[0]*H, cordinates[1]*W], "---------" , ((center[0][0] - cordinates[0])**2 + (center[0][1] - cordinates[1])**2)/2)
-	display_image = cv2.circle(img, (int(center[0][1]*W),int(center[0][0]*H)), 32, (255,0,0), 2)
+	display_image = cv2.circle(img, (int(center[0][1]*train_W),int(center[0][0]*train_H)), 32, (255,0,0), 2)
 	cv2.imshow('prediction',display_image/255)
 	x1 = max(0, x-box_half)
 	x2 = min(120, x+box_half)
