@@ -7,19 +7,21 @@ import generate_dataset
 import os
 import cv2
 import random
+import numpy as np
 
 H = 480
 W = 640
 train_H = 60
 train_W = 80
-batch_size = 16
-TEST_ITERATIONS = 3
+batch_size = 128
+TEST_ITERATIONS = 100
 
 box_half = 96
 
 
-workdir = "/home/tharindu/Desktop/black/codes/Black/loclization/ckpt"
-data_folder = "/home/1TB/EyeKnowYouSSLData"
+workdir = "./ckpt"
+data_folder = "/home/1TB/new_users_by_number/"
+target_folder = "/home/1TB/Cropped_new_users"
 
 #2 layer model
 model = models.Sequential()
@@ -44,35 +46,72 @@ else:
 	exit()
 
 
-def crop(image):
-	display_image = cv2.resize(image, (W,H), interpolation = cv2.INTER_AREA)
-	pred_input = cv2.resize(display_image, (train_W,train_H), interpolation = cv2.INTER_AREA)
-	center = model.predict(tf.reshape(pred_input, [1,train_W,train_H,1]))
-	x = int(center[0][0]*H)
-	y = int(center[0][1]*W)
-	x1 = max(0, x-box_half)
-	x2 = min(H, x+box_half)
-	y1 = max(0, y-box_half)
-	y2 = min(W, y+box_half)
-	return display_image[x1:x2, y1:y2]
+def crop(gray_image_list):
+	centers = model.predict(tf.reshape(gray_image_list, [batch_size,train_W,train_H,1]))
+	cordinates = []
+	for center in centers:
+		x = int(center[0]*H)
+		y = int(center[1]*W)
+		x1 = max(0, x-box_half)
+		x2 = min(H, x+box_half)
+		y1 = max(0, y-box_half)
+		y2 = min(W, y+box_half)
+		cordinates.append([x1,x2,y1,y2])
+	return cordinates
 
-count = 0
+def userBasedCrop(image, user):
+	s = image.shape
+	image = cv2.resize(image, (s[1]*480//s[0],480), interpolation = cv2.INTER_AREA)
+	if(user == 'p2'):
+		image = image[:, 120: 120+640]
+	elif(user == 'p5'):
+		image = image[:, 0: 0+640]
+	elif(user == 'p14'):
+		image = image[:, 105: 105+640]
+	elif(user == 'p9'):
+		image = image[:, 105: 105+640]
+	elif(user == 'p8'):
+		image = image[:, 60: 60+640]
+	elif(user == 'p13'):
+		image = image[:, 71: 71+640]
+	return image
+
+global_count = 0
 user_list = os.listdir(data_folder)
-random.shuffle(user_list)
-for  user in user_list:
+for user in user_list:
+	count = 0
 	folder_path = data_folder + '/' + user
 	image_list = os.listdir(folder_path)
-	random.shuffle(image_list)
+	os.mkdir(target_folder + '/' + user)
+	colour_list = []
+	gray_list = []
+	name_list = []
 	for image in image_list:
-		image_path = folder_path + '/' + image
-		image = cv2.imread(image_path,0)
-		cropped = crop(image)
-		cv2.imshow('original',image)
-		cv2.imshow('crop',cropped)
-		cv2.waitKey(0)
 		count += 1
-		if(count == TEST_ITERATIONS):
-			break
+		global_count += 1
+		image_path = folder_path + '/' + image
+		image_colour = cv2.imread(image_path,1)
+		sized_colour_image = userBasedCrop(image_colour, user)
+		grayscale = cv2.cvtColor(sized_colour_image, cv2.COLOR_BGR2GRAY)
+		gray_list.append(cv2.resize(grayscale, (train_W,train_H), interpolation = cv2.INTER_AREA))
+		colour_list.append(sized_colour_image)
+		name_list.append(image)
+		if(count % batch_size == 0):
+			cordinates = crop(gray_list)
+			for cordinate,sci,name in zip(cordinates,colour_list,name_list):
+				x1,x2,y1,y2 = cordinate
+				cropped = cv2.resize(sci[x1:x2, y1:y2], (96,96), interpolation = cv2.INTER_AREA)
+				cv2.imwrite(target_folder + '/' + user + '/' + name, cropped)
+			colour_list = []
+			gray_list = []
+			name_list = []
+			print(global_count)
+		# cv2.imshow('original',sized_colour_image)
+		# cv2.imshow('crop',cropped)
+		# cv2.waitKey(0)
+		# count += 1
+		# if(count > TEST_ITERATIONS):
+		# 	exit()
 
 
 
